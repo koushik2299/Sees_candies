@@ -1,0 +1,28 @@
+# Environment variables — never commit secrets
+.env
+
+# Generated database file — recreated by seed_data.py
+sees_candies.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit cache
+.streamlit/
