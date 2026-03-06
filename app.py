@@ -340,34 +340,37 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Input + Ask button ────────────────────────────────────────────────────────
-auto_question = st.session_state.pop("auto_question", None)
-
+# Input + Ask button
 col_input, col_btn = st.columns([5, 1])
 with col_input:
     user_question = st.text_input(
         label="question",
-        value=auto_question or "",
         placeholder="Type a question or click one below...",
         label_visibility="collapsed",
-        key="main_input",
     )
 with col_btn:
     submit = st.button("🔍 Ask", type="primary", use_container_width=True)
 
-# ── Sample questions (below the input) ───────────────────────────────────────
+# Ask button clicked with typed question
+if submit and user_question.strip():
+    st.session_state["current_q"] = user_question.strip()
+    st.rerun()
+elif submit and not user_question.strip():
+    st.warning("⚠️ Please type a question or click one of the suggested questions below.")
+
+# Sample questions (below the input)
 st.markdown('<p class="questions-label">💡 Suggested Questions — click any for instant results</p>', unsafe_allow_html=True)
 
-# Render in 2-column grid of pills
 q_list = list(MOCK_QA.keys())
 cols = st.columns(2)
 for i, q in enumerate(q_list):
     with cols[i % 2]:
         if st.button(q, key=f"sq_{i}"):
-            st.session_state["auto_question"] = q
+            st.session_state["current_q"] = q
             st.rerun()
 
 st.markdown("---")
+
 
 # ── Query execution ───────────────────────────────────────────────────────────
 def run_mock_query(question: str):
@@ -432,15 +435,10 @@ def show_results(question: str):
             st.dataframe(df, use_container_width=True)
 
 
-# ── Trigger execution ────────────────────────────────────────────────────────
-if auto_question:
-    # Sample question was clicked — run immediately, no Ask button needed
-    show_results(auto_question)
-elif submit:
-    if user_question.strip():
-        show_results(user_question.strip())
-    else:
-        st.warning("⚠️ Please type a question or click one of the suggested questions above.")
+# ── Show results for current question ────────────────────────────────────────
+current_q = st.session_state.get("current_q")
+if current_q:
+    show_results(current_q)
 
 # ── Chat history ──────────────────────────────────────────────────────────────
 if st.session_state.history:
