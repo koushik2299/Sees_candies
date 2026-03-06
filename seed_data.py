@@ -1,14 +1,17 @@
 """
 seed_data.py
 Run once to create and populate sees_candies.db with mock data.
+Also called automatically by app.py on first startup (cloud-safe).
 Usage: python seed_data.py
 """
 
 import sqlite3
 import random
+from pathlib import Path
 from datetime import date, timedelta
 
-DB_PATH = "sees_candies.db"
+# Always resolve DB path relative to this file — safe on Streamlit Cloud
+DB_PATH = Path(__file__).parent / "sees_candies.db"
 
 STORES = [
     (1, "Beverly Hills", "Southern California"),
@@ -180,14 +183,30 @@ def seed_ecommerce(conn: sqlite3.Connection, n: int = 160):
     )
 
 
-if __name__ == "__main__":
+def seed(conn: sqlite3.Connection):
+    """Create tables and insert all mock data into the given connection."""
     random.seed(42)
-    conn = sqlite3.connect(DB_PATH)
     create_tables(conn)
     seed_sales(conn)
     seed_production(conn)
     seed_ecommerce(conn)
     conn.commit()
+
+
+def auto_seed():
+    """
+    Called at app startup. Creates and seeds sees_candies.db if it doesn't
+    already exist. Safe to call on every startup — no-op if DB is present.
+    """
+    if not DB_PATH.exists():
+        conn = sqlite3.connect(DB_PATH)
+        seed(conn)
+        conn.close()
+
+
+if __name__ == "__main__":
+    conn = sqlite3.connect(DB_PATH)
+    seed(conn)
     conn.close()
     print(f"✅ Database created: {DB_PATH}")
     print("   Tables: sales (220 rows), production (110 rows), ecommerce_orders (160 rows)")

@@ -10,6 +10,10 @@ import pandas as pd
 from database import run_query
 from schema import get_schema_string
 from charts import render_chart
+from seed_data import auto_seed
+
+# Auto-create DB on first startup (required for Streamlit Cloud deployments)
+auto_seed()
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
